@@ -57,11 +57,16 @@ function DropdownMenuLabel({
   className,
   inset,
   ...props
-}: MenuPrimitive.GroupLabel.Props & {
+}: React.ComponentProps<"div"> & {
   inset?: boolean
 }) {
+  // A plain div, not MenuPrimitive.GroupLabel — that primitive requires
+  // being nested inside <Menu.Group>/DropdownMenuGroup (it reads
+  // MenuGroupContext and throws otherwise), but every label in this app is
+  // a standalone caption at the top of a menu, not an ARIA group heading
+  // for a specific subset of items.
   return (
-    <MenuPrimitive.GroupLabel
+    <div
       data-slot="dropdown-menu-label"
       data-inset={inset}
       className={cn(
