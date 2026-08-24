@@ -40,10 +40,10 @@ export default function Home() {
       <main className="flex flex-1 flex-col">
         <section className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center gap-12 px-6 py-12 lg:flex-row lg:items-center lg:gap-8 lg:py-20">
           <div className="flex flex-col items-center gap-6 text-center lg:items-start lg:text-left">
-            <p className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
-              Vocabulary Builder
-            </p>
-            <h1 className="max-w-xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
+            <span className="rounded-full border-2 border-foreground bg-card px-3 py-1 text-xs font-semibold tracking-wide uppercase">
+              ✨ Vocabulary Builder
+            </span>
+            <h1 className="max-w-xl text-4xl font-bold tracking-tight text-balance sm:text-5xl">
               Learn two words a day. Never forget them again.
             </h1>
             <p className="max-w-md text-muted-foreground">
@@ -68,7 +68,7 @@ export default function Home() {
                 {LEARNING_GOALS.map((goal) => (
                   <span
                     key={goal.value}
-                    className="rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                    className="rounded-full border-2 border-foreground/25 bg-card px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
                   >
                     {goal.label}
                   </span>
@@ -84,10 +84,10 @@ export default function Home() {
           <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 px-6 py-14 sm:grid-cols-3">
             {FEATURES.map((feature) => (
               <div key={feature.title} className="flex flex-col items-center gap-3 text-center sm:items-start sm:text-left">
-                <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <div className="shadow-brutal flex size-11 items-center justify-center rounded-lg border-2 border-foreground bg-primary text-primary-foreground">
                   <feature.icon className="size-5" aria-hidden="true" />
                 </div>
-                <h2 className="font-semibold">{feature.title}</h2>
+                <h2 className="font-bold">{feature.title}</h2>
                 <p className="text-sm text-muted-foreground">{feature.description}</p>
               </div>
             ))}

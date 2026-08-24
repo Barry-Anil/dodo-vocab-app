@@ -82,7 +82,7 @@ export function OnboardingFlow() {
             {CEFR_LEVELS.map((level) => (
               <label
                 key={level.value}
-                className="flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm transition-all duration-150 ease-out hover:scale-[1.02] hover:border-primary/40 active:scale-[0.98] has-[[data-checked]]:scale-[1.02] has-[[data-checked]]:border-primary has-[[data-checked]]:bg-primary/5"
+                className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-foreground/20 p-3 text-sm transition-all duration-150 ease-out hover:scale-[1.02] hover:border-foreground/50 active:scale-[0.98] has-[[data-checked]]:scale-[1.02] has-[[data-checked]]:border-primary has-[[data-checked]]:bg-primary/5"
               >
                 <RadioGroupItem value={level.value} />
                 <span>
@@ -129,7 +129,7 @@ export function OnboardingFlow() {
             {DAILY_TARGETS.map((target) => (
               <label
                 key={target}
-                className="flex cursor-pointer flex-col items-center gap-1 rounded-lg border p-3 transition-all duration-150 ease-out hover:scale-[1.03] hover:border-primary/40 active:scale-[0.97] has-[[data-checked]]:scale-[1.03] has-[[data-checked]]:border-primary has-[[data-checked]]:bg-primary/5"
+                className="flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 border-foreground/20 p-3 transition-all duration-150 ease-out hover:scale-[1.03] hover:border-foreground/50 active:scale-[0.97] has-[[data-checked]]:scale-[1.03] has-[[data-checked]]:border-primary has-[[data-checked]]:bg-primary/5"
               >
                 <RadioGroupItem value={String(target)} />
                 <span className="text-lg font-semibold">{target}</span>

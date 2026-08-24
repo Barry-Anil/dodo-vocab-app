@@ -12,7 +12,7 @@ export function TodayGoalCard({ wordsAdded, wordsTarget }: Props) {
   const remaining = Math.max(0, wordsTarget - wordsAdded);
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border bg-card p-5 sm:flex-row sm:items-center sm:justify-between">
+    <div className="shadow-brutal flex flex-col gap-4 rounded-xl border-2 border-foreground bg-card p-5 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex-1">
         <p className="text-sm font-medium text-muted-foreground">Today&apos;s goal</p>
         <div className="mt-1 flex items-baseline gap-2">

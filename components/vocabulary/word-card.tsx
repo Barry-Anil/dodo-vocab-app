@@ -44,7 +44,7 @@ export function WordCard({
   return (
     <Link
       href={`/vocabulary/${wordId}`}
-      className="group flex flex-col gap-2 rounded-xl border bg-card p-4 transition-all duration-150 ease-out hover:-translate-y-0.5 hover:border-primary/40 hover:bg-accent/40 hover:shadow-md active:translate-y-0 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="shadow-brutal group flex flex-col gap-2 rounded-xl border-2 border-foreground bg-card p-4 transition-all duration-150 ease-out hover:-translate-y-0.5 hover:bg-accent/40 hover:shadow-brutal-lg active:translate-x-[3px] active:translate-y-[3px] active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="flex items-start justify-between gap-2">
         <div>

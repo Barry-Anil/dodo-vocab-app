@@ -30,7 +30,7 @@ export default async function QuizPage() {
         </p>
       </div>
 
-      <div className="flex flex-col items-center gap-4 rounded-xl border bg-card py-12 text-center">
+      <div className="shadow-brutal-lg flex flex-col items-center gap-4 rounded-xl border-2 border-foreground bg-card py-12 text-center">
         <ClipboardCheck className="size-8 text-muted-foreground" />
         {!thisWeekQuiz ? (
           <>

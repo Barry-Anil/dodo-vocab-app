@@ -27,7 +27,7 @@ export function QuizResults({
 
   return (
     <div className="mx-auto flex max-w-lg flex-col gap-6">
-      <div className="flex flex-col items-center gap-2 rounded-xl border bg-card p-8 text-center">
+      <div className="shadow-brutal-lg flex flex-col items-center gap-2 rounded-xl border-2 border-foreground bg-card p-8 text-center">
         <p className="text-4xl font-bold tracking-tight">{score ?? 0}%</p>
         <p className="text-sm text-muted-foreground">
           {answers.filter((a) => a.isCorrect).length} of {questions.length} correct
@@ -39,7 +39,7 @@ export function QuizResults({
         {questions.map((q) => {
           const answer = answerByQuestion.get(q.id);
           return (
-            <div key={q.id} className="rounded-lg border bg-card p-3">
+            <div key={q.id} className="rounded-lg border-2 border-foreground/15 bg-card p-3">
               <div className="flex items-start gap-2">
                 {answer?.isCorrect ? (
                   <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-500" />

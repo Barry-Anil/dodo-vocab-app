@@ -38,7 +38,7 @@ export function WordShowcase() {
       {SHOWCASE_WORDS.map((word) => (
         <div
           key={word.text}
-          className={`absolute w-52 rounded-xl border bg-card p-4 shadow-lg transition-transform duration-300 ease-out hover:-translate-y-1 hover:rotate-0 ${word.className}`}
+          className={`shadow-brutal absolute w-52 rounded-xl border-2 border-foreground bg-card p-4 transition-all duration-300 ease-out hover:-translate-y-1 hover:rotate-0 hover:shadow-brutal-lg ${word.className}`}
         >
           <div className="flex items-center gap-2">
             <span className="font-semibold">{word.text}</span>

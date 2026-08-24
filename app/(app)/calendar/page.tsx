@@ -136,7 +136,7 @@ export default async function CalendarPage({
       </div>
 
       <div className="w-full lg:w-80 lg:shrink-0">
-        <div className="rounded-xl border bg-card p-4">
+        <div className="shadow-brutal rounded-xl border-2 border-foreground bg-card p-4">
           <h2 className="font-medium">
             {new Date(`${selectedDate}T00:00:00Z`).toLocaleDateString(undefined, {
               weekday: "long",

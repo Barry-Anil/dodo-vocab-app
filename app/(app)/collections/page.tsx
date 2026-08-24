@@ -38,7 +38,7 @@ export default async function CollectionsPage() {
             <Link
               key={collection.id}
               href={`/collections/${collection.id}`}
-              className="flex flex-col gap-1 rounded-xl border bg-card p-4 transition-all duration-150 ease-out hover:-translate-y-0.5 hover:border-primary/40 hover:bg-accent/40 hover:shadow-md active:translate-y-0 active:scale-[0.99]"
+              className="shadow-brutal flex flex-col gap-1 rounded-xl border-2 border-foreground bg-card p-4 transition-all duration-150 ease-out hover:-translate-y-0.5 hover:bg-accent/40 hover:shadow-brutal-lg active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
             >
               <span className="font-semibold">{collection.name}</span>
               {collection.description ? (

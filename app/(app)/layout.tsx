@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/session";
 import { needsOnboarding } from "@/lib/db/queries/preferences";
+import { getStreak } from "@/lib/db/queries/daily";
 import { Sidebar } from "@/components/app-shell/sidebar";
 import { MobileBottomNav } from "@/components/app-shell/mobile-bottom-nav";
 import { Topbar } from "@/components/app-shell/topbar";
@@ -18,9 +19,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!user) redirect("/login");
   if (await needsOnboarding(user.id)) redirect("/onboarding");
 
+  const streak = await getStreak(user.id);
+
   return (
     <div className="flex min-h-svh flex-1">
-      <Sidebar />
+      <Sidebar currentStreak={streak?.currentStreak ?? 0} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar name={user.name ?? null} email={user.email ?? ""} />
         <main className="flex-1 overflow-y-auto pb-16 md:pb-0">

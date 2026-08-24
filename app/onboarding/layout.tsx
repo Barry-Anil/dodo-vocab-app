@@ -17,7 +17,7 @@ export default async function OnboardingLayout({ children }: { children: React.R
     <div className="flex flex-1 items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <p className="mb-8 text-center text-lg font-semibold tracking-tight">Vocabulary Builder</p>
-        <div className="rounded-xl border bg-card p-6 shadow-sm">{children}</div>
+        <div className="shadow-brutal-lg rounded-xl border-2 border-foreground bg-card p-6">{children}</div>
       </div>
     </div>
   );

@@ -42,7 +42,7 @@ export default async function ReviewPage({
           <p className="text-sm text-muted-foreground">A focused 5-minute mix, chosen for you.</p>
         </div>
 
-        <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
+        <div className="shadow-brutal flex flex-col gap-2 rounded-xl border-2 border-foreground bg-card p-4">
           <p className="text-sm font-medium">Today&apos;s review</p>
           <ul className="flex flex-col gap-1.5 text-sm text-muted-foreground">
             {mix.weak.length > 0 ? (

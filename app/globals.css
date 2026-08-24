@@ -79,6 +79,18 @@
   }
 }
 
+/* "Sticker" card treatment — a bold border + a flat offset shadow (no
+   blur) instead of a soft drop shadow, the graphic language cards use
+   throughout the app now. Defined once so every card gets the exact same
+   shadow color/offset instead of hand-written arbitrary values scattered
+   across components. */
+.shadow-brutal {
+  box-shadow: 3px 3px 0 0 color-mix(in oklch, var(--foreground) 55%, transparent);
+}
+.shadow-brutal-lg {
+  box-shadow: 5px 5px 0 0 color-mix(in oklch, var(--foreground) 55%, transparent);
+}
+
 :root {
   /* Warm orange primary + soft lavender neutrals + deep navy text — see
      the eJOY reference screenshot this palette was pulled from. */
@@ -105,7 +117,7 @@
   --chart-3: #22c55e;
   --chart-4: #3b82f6;
   --chart-5: #a78bfa;
-  --radius: 0.625rem;
+  --radius: 0.75rem;
   --sidebar: #ffffff;
   --sidebar-foreground: #1a1a2e;
   --sidebar-primary: #ff7a29;

@@ -52,7 +52,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
           {items.map(({ word }) => (
             <li
               key={word.id}
-              className="flex items-center justify-between gap-3 rounded-lg border bg-card px-3 py-2"
+              className="flex items-center justify-between gap-3 rounded-lg border-2 border-foreground/15 bg-card px-3 py-2 transition-colors hover:border-foreground/40"
             >
               <Link href={`/vocabulary/${word.id}`} className="flex-1">
                 <span className="font-medium capitalize">{word.text}</span>{" "}

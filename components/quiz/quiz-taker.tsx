@@ -67,7 +67,7 @@ export function QuizTaker({ quizId, questions }: { quizId: string; questions: Qu
         <Progress value={((index + 1) / questions.length) * 100} />
       </div>
 
-      <div className="rounded-xl border bg-card p-6">
+      <div className="shadow-brutal rounded-xl border-2 border-foreground bg-card p-6">
         <p className="text-lg">{question.questionText}</p>
       </div>
 
@@ -79,7 +79,7 @@ export function QuizTaker({ quizId, questions }: { quizId: string; questions: Qu
               type="button"
               onClick={() => selectOption(option)}
               className={cn(
-                "rounded-lg border px-4 py-2.5 text-left text-sm transition-all duration-150 ease-out hover:scale-[1.01] hover:bg-accent active:scale-[0.99]",
+                "rounded-lg border-2 border-foreground/20 px-4 py-2.5 text-left text-sm transition-all duration-150 ease-out hover:scale-[1.01] hover:border-foreground/60 hover:bg-accent active:scale-[0.99]",
                 answers[question.id] === option && "border-primary bg-primary/5 scale-[1.01]",
               )}
             >

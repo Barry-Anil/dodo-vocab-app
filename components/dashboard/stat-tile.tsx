@@ -17,7 +17,7 @@ const ACCENT_CLASS: Record<NonNullable<Props["accent"]>, string> = {
 
 export function StatTile({ label, value, icon: Icon, accent = "default" }: Props) {
   return (
-    <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
+    <div className="shadow-brutal flex flex-col gap-2 rounded-xl border-2 border-foreground bg-card p-4">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</span>
         <Icon className={cn("size-4", ACCENT_CLASS[accent])} aria-hidden="true" />

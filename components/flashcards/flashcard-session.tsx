@@ -176,7 +176,7 @@ export function FlashcardSession({
       )}
 
       {mode === "flashcard_fill_blank" && blankSentence && (
-        <div className="flex flex-col gap-3 rounded-xl border bg-card p-6">
+        <div className="shadow-brutal flex flex-col gap-3 rounded-xl border-2 border-foreground bg-card p-6">
           <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Fill in the blank</p>
           <p className="text-lg">{blankSentence}</p>
           <Input
@@ -206,7 +206,7 @@ export function FlashcardSession({
       )}
 
       {(mode === "flashcard_synonym_challenge" || mode === "flashcard_antonym_challenge") && (
-        <div className="flex flex-col gap-3 rounded-xl border bg-card p-6">
+        <div className="shadow-brutal flex flex-col gap-3 rounded-xl border-2 border-foreground bg-card p-6">
           <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
             {mode === "flashcard_synonym_challenge" ? "Pick the synonym" : "Pick the antonym"} of &ldquo;{word.text}
             &rdquo;
@@ -308,7 +308,7 @@ function FlipCard({
       type="button"
       onClick={onFlip}
       disabled={flipped}
-      className="flex min-h-56 flex-col items-center justify-center gap-3 rounded-xl border bg-card p-8 text-center transition-all duration-200 ease-out not-disabled:hover:-translate-y-0.5 not-disabled:hover:scale-[1.01] not-disabled:hover:bg-accent/40 not-disabled:hover:shadow-lg not-disabled:active:scale-[0.99]"
+      className="shadow-brutal flex min-h-56 flex-col items-center justify-center gap-3 rounded-xl border-2 border-foreground bg-card p-8 text-center transition-all duration-200 ease-out not-disabled:hover:-translate-y-0.5 not-disabled:hover:bg-accent/40 not-disabled:hover:shadow-brutal-lg not-disabled:active:translate-x-[3px] not-disabled:active:translate-y-[3px] not-disabled:active:shadow-none"
     >
       {!flipped ? (
         <>
