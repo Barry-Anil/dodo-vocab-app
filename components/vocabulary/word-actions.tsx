@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Volume2, Heart, CheckCircle2, Clock, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { cn } from "@/lib/utils";
 import {
   toggleFavorite,
@@ -33,6 +34,20 @@ export function WordActions({ userWordId, wordText, isFavorite, status }: Props)
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [favorite, setFavorite] = useState(isFavorite);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  function handleRemove() {
+    startTransition(async () => {
+      const result = await removeWordFromBank(userWordId);
+      if (!result.success) {
+        toast.error(result.error);
+        setConfirmOpen(false);
+        return;
+      }
+      toast.success("Removed from your word bank");
+      router.push("/vocabulary");
+    });
+  }
 
   function run(action: () => Promise<{ success: boolean; error?: string }>, successMessage: string) {
     startTransition(async () => {
@@ -94,21 +109,21 @@ export function WordActions({ userWordId, wordText, isFavorite, status }: Props)
         size="sm"
         className="text-destructive hover:text-destructive"
         disabled={isPending}
-        onClick={() => {
-          if (!confirm(`Remove "${wordText}" from your word bank?`)) return;
-          startTransition(async () => {
-            const result = await removeWordFromBank(userWordId);
-            if (!result.success) {
-              toast.error(result.error);
-              return;
-            }
-            toast.success("Removed from your word bank");
-            router.push("/vocabulary");
-          });
-        }}
+        onClick={() => setConfirmOpen(true)}
       >
         <Trash2 className="size-4" /> Remove
       </Button>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Remove this word?"
+        description={`Remove "${wordText}" from your word bank? Your review history for it will be lost.`}
+        confirmLabel="Remove"
+        destructive
+        isPending={isPending}
+        onConfirm={handleRemove}
+      />
     </div>
   );
 }
