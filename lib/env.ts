@@ -9,9 +9,11 @@ import { z } from "zod";
  * server action or AI call.
  */
 const envSchema = z.object({
-  DATABASE_URL: z.string().url(),
+  DATABASE_URL: z.string({ error: "DATABASE_URL is required (your Neon connection string)" }).url(),
 
-  AUTH_SECRET: z.string().min(1, "AUTH_SECRET is required (openssl rand -base64 32)"),
+  AUTH_SECRET: z
+    .string({ error: "AUTH_SECRET is required (openssl rand -base64 32)" })
+    .min(1, "AUTH_SECRET is required (openssl rand -base64 32)"),
   AUTH_URL: z.string().url().default("http://localhost:3000"),
 
   // Which AIService provider is active — lib/ai/client.ts's getAIService()
@@ -36,7 +38,18 @@ const envSchema = z.object({
 export type Env = z.infer<typeof envSchema>;
 
 function loadEnv(): Env {
-  const parsed = envSchema.safeParse(process.env);
+  // Deployment platforms (Vercel included) represent an env var that was
+  // defined in their dashboard but left blank as an empty string, not as
+  // truly absent — and Zod's `.optional()`/`.default()` only treat
+  // `undefined` as "not provided", so a blank optional field (e.g. an
+  // unused UPSTASH_REDIS_REST_URL) would otherwise fail `.url()`
+  // validation instead of being skipped. Stripped here so blank behaves
+  // as unset, matching what "I didn't set this" actually means.
+  const rawEnv = Object.fromEntries(
+    Object.entries(process.env).map(([key, value]) => [key, value === "" ? undefined : value]),
+  );
+
+  const parsed = envSchema.safeParse(rawEnv);
 
   if (!parsed.success) {
     const issues = parsed.error.issues
