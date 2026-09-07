@@ -33,3 +33,11 @@ export function previousDateString(dateStr: string): string {
   return date.toISOString().slice(0, 10);
 }
 
+/** Shift a YYYY-MM-DD string by `days` (negative = earlier), as YYYY-MM-DD. */
+export function addDays(dateStr: string, days: number): string {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+

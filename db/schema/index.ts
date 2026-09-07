@@ -10,6 +10,7 @@ import { quizzes, quizQuestions, quizAttempts, quizAnswers } from "./quizzes";
 import { userStreaks } from "./streaks";
 import { notifications } from "./notifications";
 import { aiGenerations } from "./ai";
+import { studySessions } from "./study";
 
 export * from "./enums";
 export * from "./_columns";
@@ -24,6 +25,7 @@ export * from "./quizzes";
 export * from "./streaks";
 export * from "./notifications";
 export * from "./ai";
+export * from "./study";
 
 /**
  * Relation definitions (Drizzle relational query API) enable ergonomic
@@ -55,6 +57,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   reviews: many(reviews),
   quizzes: many(quizzes),
   notifications: many(notifications),
+  studySessions: many(studySessions),
 }));
 
 export const wordsRelations = relations(words, ({ many }) => ({
@@ -179,4 +182,8 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 
 export const aiGenerationsRelations = relations(aiGenerations, ({ one }) => ({
   user: one(users, { fields: [aiGenerations.userId], references: [users.id] }),
+}));
+
+export const studySessionsRelations = relations(studySessions, ({ one }) => ({
+  user: one(users, { fields: [studySessions.userId], references: [users.id] }),
 }));
