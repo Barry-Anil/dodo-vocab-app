@@ -59,30 +59,21 @@ function clampInt(value: number, min: number, max: number, fallback: number): nu
   return Math.min(max, Math.max(min, Math.round(value)));
 }
 
-/** Short two-tone chime via the Web Audio API — no asset to bundle. */
-function chime() {
+// End-of-phase cues — audio files live in /public.
+const FOCUS_DONE_SOUND = "/Coffee_Cup_Down.mp3";
+const BREAK_OVER_SOUND = "/break_over.mp3";
+
+/** Plays a sound file from /public once. Best-effort — ignores autoplay blocks. */
+function playSound(src: string) {
   try {
-    const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!Ctor) return;
-    const ctx = new Ctor();
-    const now = ctx.currentTime;
-    [880, 1320].forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = freq;
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      const start = now + i * 0.18;
-      gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(0.25, start + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.35);
-      osc.start(start);
-      osc.stop(start + 0.36);
+    if (typeof Audio === "undefined") return;
+    const audio = new Audio(src);
+    audio.volume = 1;
+    void audio.play().catch(() => {
+      // Autoplay policy may block this if the tab has had no interaction.
     });
-    setTimeout(() => ctx.close(), 1200);
   } catch {
-    // Audio is a nice-to-have; ignore failures (autoplay policy, no device).
+    // Audio is a nice-to-have; ignore failures.
   }
 }
 
@@ -196,7 +187,7 @@ export function PomodoroTimer({
     // never log time the learner walked away from.
     const autoStart = nextPhase !== "focus";
 
-    chime();
+    playSound(finishedPhase === "focus" ? FOCUS_DONE_SOUND : BREAK_OVER_SOUND);
     notify(
       finishedPhase === "focus" ? "Focus block done" : "Break's over",
       finishedPhase === "focus"
