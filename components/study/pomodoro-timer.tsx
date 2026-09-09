@@ -390,6 +390,42 @@ export function PomodoroTimer({
     resetToPhase("focus", completedFocusRounds);
   }
 
+  // Switches to `nextPhase` and starts its countdown immediately.
+  function startPhaseNow(nextPhase: Phase, rounds: number) {
+    stopTicking();
+    focusStartedAtRef.current = nextPhase === "focus" ? Date.now() : null;
+    const duration = phaseDurationMs(nextPhase, settings);
+    const endsAt = Date.now() + duration;
+    endsAtRef.current = endsAt;
+    setPhase(nextPhase);
+    setCompletedFocusRounds(rounds);
+    setPausedRemainingMs(duration);
+    setDisplayRemainingMs(duration);
+    setRunning(true);
+    persist({
+      phase: nextPhase,
+      completedFocusRounds: rounds,
+      running: true,
+      endsAt,
+      pausedRemainingMs: duration,
+      focusStartedAt: focusStartedAtRef.current,
+    });
+  }
+
+  // "Dodo break" — start a short break right now, on demand. A focus block in
+  // progress is logged first if it's worth logging. Doesn't touch the
+  // long-break round counter: a break you chose to take isn't a scheduled one.
+  function handleDodoBreakNow() {
+    if (phase === "focus") {
+      const elapsedSeconds = Math.round((phaseDurationMs("focus", settings) - displayRemainingMs) / 1000);
+      if (elapsedSeconds >= MIN_LOGGABLE_SECONDS) {
+        logSession(elapsedSeconds, settings.focusMin * 60, true);
+        toast.success(`Logged ${formatDuration(elapsedSeconds)} of focus.`);
+      }
+    }
+    startPhaseNow("shortBreak", completedFocusRounds);
+  }
+
   type NumericSetting = "focusMin" | "shortBreakMin" | "longBreakMin" | "roundsBeforeLongBreak";
 
   function updateSetting(key: NumericSetting, raw: string) {
@@ -495,6 +531,17 @@ export function PomodoroTimer({
             </Button>
           )}
         </div>
+
+        {isFocus ? (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleDodoBreakNow}
+            disabled={!hydrated}
+          >
+            <Coffee className="size-4" /> Dodo break · {settings.shortBreakMin} min
+          </Button>
+        ) : null}
 
         <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-muted-foreground">
           <Switch
