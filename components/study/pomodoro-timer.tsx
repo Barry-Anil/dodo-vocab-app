@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Play, Pause, RotateCcw, SkipForward, Square, Settings2, Coffee, Brain } from "lucide-react";
+import { Play, Pause, RotateCcw, SkipForward, Square, Settings2, Coffee, Brain, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -19,6 +19,8 @@ interface Settings {
   roundsBeforeLongBreak: number;
   /** When true, a break's countdown begins on its own after a focus block. */
   autoStartBreaks: boolean;
+  /** When false, end-of-phase sounds are silenced. */
+  soundEnabled: boolean;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -27,6 +29,7 @@ const DEFAULT_SETTINGS: Settings = {
   longBreakMin: 15,
   roundsBeforeLongBreak: 4,
   autoStartBreaks: false,
+  soundEnabled: true,
 };
 
 /** Fills in fields missing from an older persisted snapshot. */
@@ -145,6 +148,8 @@ export function PomodoroTimer({
   const focusDoneAudioRef = useRef<HTMLAudioElement | null>(null);
   const breakOverAudioRef = useRef<HTMLAudioElement | null>(null);
   const audioUnlockedRef = useRef(false);
+  // playCue is a stable callback, so it reads the live mute state off a ref.
+  const soundEnabledRef = useRef(DEFAULT_SETTINGS.soundEnabled);
 
   useEffect(() => {
     const focusDone = new Audio(FOCUS_DONE_SOUND);
@@ -180,7 +185,20 @@ export function PomodoroTimer({
     });
   }, []);
 
+  const stopSound = useCallback(() => {
+    [focusDoneAudioRef.current, breakOverAudioRef.current].forEach((audio) => {
+      if (!audio) return;
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch {
+        // Ignore — nothing playing.
+      }
+    });
+  }, []);
+
   const playCue = useCallback((kind: "focusDone" | "breakOver") => {
+    if (!soundEnabledRef.current) return;
     const audio = kind === "focusDone" ? focusDoneAudioRef.current : breakOverAudioRef.current;
     if (!audio) {
       beep();
@@ -409,6 +427,11 @@ export function PomodoroTimer({
     return stopTicking;
   }, [running, startTicking, stopTicking]);
 
+  // Mirror the mute setting onto the ref playCue reads.
+  useEffect(() => {
+    soundEnabledRef.current = settings.soundEnabled;
+  }, [settings.soundEnabled]);
+
   function handleStart() {
     unlockAudio();
     if (typeof Notification !== "undefined" && Notification.permission === "default") {
@@ -541,6 +564,15 @@ export function PomodoroTimer({
     persist({ settings: next });
   }
 
+  function toggleSound() {
+    const nextEnabled = !settings.soundEnabled;
+    soundEnabledRef.current = nextEnabled;
+    if (!nextEnabled) stopSound(); // silence anything playing right now
+    const next = { ...settings, soundEnabled: nextEnabled };
+    setSettings(next);
+    persist({ settings: next });
+  }
+
   const totalMs = phaseDurationMs(phase, settings);
   const fraction = totalMs > 0 ? Math.min(1, Math.max(0, 1 - displayRemainingMs / totalMs)) : 0;
   const isFocus = phase === "focus";
@@ -552,10 +584,23 @@ export function PomodoroTimer({
   return (
     <div
       className={cn(
-        "shadow-brutal flex flex-col items-center gap-6 rounded-xl border-2 border-foreground bg-card p-6",
+        "shadow-brutal relative flex flex-col items-center gap-6 rounded-xl border-2 border-foreground bg-card p-6",
         !isFocus && "bg-emerald-500/5",
       )}
     >
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        onClick={toggleSound}
+        disabled={!hydrated}
+        className="absolute right-3 top-3"
+        aria-pressed={!settings.soundEnabled}
+        aria-label={settings.soundEnabled ? "Mute timer sounds" : "Unmute timer sounds"}
+        title={settings.soundEnabled ? "Mute timer sounds" : "Unmute timer sounds"}
+      >
+        {settings.soundEnabled ? <Volume2 className="size-4" /> : <VolumeX className="size-4 text-muted-foreground" />}
+      </Button>
+
       <div className="flex items-center gap-2 text-sm font-medium">
         {isFocus ? (
           <Brain className="size-4 text-primary" aria-hidden="true" />
