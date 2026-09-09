@@ -392,7 +392,6 @@ export function PomodoroTimer({
 
   // Switches to `nextPhase` and starts its countdown immediately.
   function startPhaseNow(nextPhase: Phase, rounds: number) {
-    stopTicking();
     focusStartedAtRef.current = nextPhase === "focus" ? Date.now() : null;
     const duration = phaseDurationMs(nextPhase, settings);
     const endsAt = Date.now() + duration;
@@ -402,6 +401,10 @@ export function PomodoroTimer({
     setPausedRemainingMs(duration);
     setDisplayRemainingMs(duration);
     setRunning(true);
+    // Start the interval directly rather than waiting on the `running` effect —
+    // when a focus block was already running, `running` doesn't change and the
+    // effect wouldn't re-fire, leaving the new phase frozen.
+    startTicking();
     persist({
       phase: nextPhase,
       completedFocusRounds: rounds,
