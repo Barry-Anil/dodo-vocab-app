@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Play, Pause, RotateCcw, SkipForward, Square, Settings2, Coffee, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { formatClock, formatDuration } from "@/lib/format";
 import { recordStudySession } from "@/lib/actions/study";
@@ -16,6 +17,8 @@ interface Settings {
   shortBreakMin: number;
   longBreakMin: number;
   roundsBeforeLongBreak: number;
+  /** When true, a break's countdown begins on its own after a focus block. */
+  autoStartBreaks: boolean;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -23,7 +26,13 @@ const DEFAULT_SETTINGS: Settings = {
   shortBreakMin: 5,
   longBreakMin: 15,
   roundsBeforeLongBreak: 4,
+  autoStartBreaks: false,
 };
+
+/** Fills in fields missing from an older persisted snapshot. */
+function normalizeSettings(raw: Partial<Settings> | undefined): Settings {
+  return { ...DEFAULT_SETTINGS, ...raw };
+}
 
 const STORAGE_KEY = "vocab-builder:pomodoro";
 const MIN_LOGGABLE_SECONDS = 60;
@@ -183,15 +192,18 @@ export function PomodoroTimer({
     }
 
     const nextDuration = phaseDurationMs(nextPhase, settings);
-    // Breaks roll on automatically; a fresh focus block waits for Start so we
-    // never log time the learner walked away from.
-    const autoStart = nextPhase !== "focus";
+    // A fresh focus block always waits for Start (so we never log time the
+    // learner walked away from); a break only rolls on its own when the
+    // "Auto-start breaks" toggle is on.
+    const autoStart = nextPhase !== "focus" && settings.autoStartBreaks;
 
     playSound(finishedPhase === "focus" ? FOCUS_DONE_SOUND : BREAK_OVER_SOUND);
     notify(
       finishedPhase === "focus" ? "Focus block done" : "Break's over",
       finishedPhase === "focus"
-        ? `Nice — take a ${nextPhase === "longBreak" ? "long" : "short"} break.`
+        ? autoStart
+          ? `Nice — your ${nextPhase === "longBreak" ? "long" : "short"} break has started.`
+          : `Nice — press start to begin your ${nextPhase === "longBreak" ? "long" : "short"} break.`
         : "Back to it. Press start when you're ready.",
     );
 
@@ -258,7 +270,7 @@ export function PomodoroTimer({
     }
 
     if (snap && snap.settings) {
-      const s = snap.settings;
+      const s = normalizeSettings(snap.settings);
       setSettings(s);
       setCompletedFocusRounds(snap.completedFocusRounds ?? 0);
       focusStartedAtRef.current = snap.focusStartedAt ?? null;
@@ -378,8 +390,10 @@ export function PomodoroTimer({
     resetToPhase("focus", completedFocusRounds);
   }
 
-  function updateSetting(key: keyof Settings, raw: string) {
-    const limits: Record<keyof Settings, [number, number]> = {
+  type NumericSetting = "focusMin" | "shortBreakMin" | "longBreakMin" | "roundsBeforeLongBreak";
+
+  function updateSetting(key: NumericSetting, raw: string) {
+    const limits: Record<NumericSetting, [number, number]> = {
       focusMin: [1, 120],
       shortBreakMin: [1, 60],
       longBreakMin: [1, 60],
@@ -396,6 +410,12 @@ export function PomodoroTimer({
     } else {
       persist({ settings: next });
     }
+  }
+
+  function toggleAutoStartBreaks(value: boolean) {
+    const next = { ...settings, autoStartBreaks: value };
+    setSettings(next);
+    persist({ settings: next });
   }
 
   const totalMs = phaseDurationMs(phase, settings);
@@ -450,28 +470,41 @@ export function PomodoroTimer({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        {running ? (
-          <Button onClick={handlePause} disabled={!hydrated}>
-            <Pause className="size-4" /> Pause
+      <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {running ? (
+            <Button onClick={handlePause} disabled={!hydrated}>
+              <Pause className="size-4" /> Pause
+            </Button>
+          ) : (
+            <Button onClick={handleStart} disabled={!hydrated}>
+              {isFocus ? <Play className="size-4" /> : <Coffee className="size-4" />}
+              {isFocus ? "Start" : "Start break"}
+            </Button>
+          )}
+          <Button variant="outline" onClick={handleReset} disabled={!hydrated}>
+            <RotateCcw className="size-4" /> Reset
           </Button>
-        ) : (
-          <Button onClick={handleStart} disabled={!hydrated}>
-            <Play className="size-4" /> Start
-          </Button>
-        )}
-        <Button variant="outline" onClick={handleReset} disabled={!hydrated}>
-          <RotateCcw className="size-4" /> Reset
-        </Button>
-        {isFocus ? (
-          <Button variant="outline" onClick={handleStop} disabled={!hydrated}>
-            <Square className="size-4" /> Stop &amp; log
-          </Button>
-        ) : (
-          <Button variant="outline" onClick={handleSkipBreak} disabled={!hydrated}>
-            <SkipForward className="size-4" /> Skip break
-          </Button>
-        )}
+          {isFocus ? (
+            <Button variant="outline" onClick={handleStop} disabled={!hydrated}>
+              <Square className="size-4" /> Stop &amp; log
+            </Button>
+          ) : (
+            <Button variant="outline" onClick={handleSkipBreak} disabled={!hydrated}>
+              <SkipForward className="size-4" /> Skip break
+            </Button>
+          )}
+        </div>
+
+        <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-muted-foreground">
+          <Switch
+            size="sm"
+            checked={settings.autoStartBreaks}
+            onCheckedChange={toggleAutoStartBreaks}
+            disabled={!hydrated}
+          />
+          Auto-start breaks {settings.autoStartBreaks ? "on" : "off"}
+        </label>
       </div>
 
       <div className="flex w-full flex-col items-center gap-1 border-t pt-4 text-center">
