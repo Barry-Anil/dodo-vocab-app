@@ -72,17 +72,35 @@ function clampInt(value: number, min: number, max: number, fallback: number): nu
 const FOCUS_DONE_SOUND = "/Coffee_Cup_Down.mp3";
 const BREAK_OVER_SOUND = "/break_over.mp3";
 
-/** Plays a sound file from /public once. Best-effort — ignores autoplay blocks. */
-function playSound(src: string) {
+/**
+ * Last-ditch fallback if the mp3 can't play (autoplay block, decode error):
+ * a short two-tone beep via the Web Audio API.
+ */
+function beep() {
   try {
-    if (typeof Audio === "undefined") return;
-    const audio = new Audio(src);
-    audio.volume = 1;
-    void audio.play().catch(() => {
-      // Autoplay policy may block this if the tab has had no interaction.
+    const Ctor =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctor) return;
+    const ctx = new Ctor();
+    const now = ctx.currentTime;
+    [880, 1320].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      const start = now + i * 0.18;
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.25, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.35);
+      osc.start(start);
+      osc.stop(start + 0.36);
     });
+    setTimeout(() => ctx.close(), 1200);
   } catch {
-    // Audio is a nice-to-have; ignore failures.
+    // Nothing more we can do.
   }
 }
 
@@ -120,6 +138,65 @@ export function PomodoroTimer({
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // handlePhaseComplete is defined below; the tick needs a stable reference to it.
   const onCompleteRef = useRef<() => void>(() => {});
+
+  // Audio elements are created once and "unlocked" on the first user gesture
+  // (Start / Dodo break), so the browser's autoplay policy lets them play
+  // later when the countdown ends — which is not itself a user gesture.
+  const focusDoneAudioRef = useRef<HTMLAudioElement | null>(null);
+  const breakOverAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUnlockedRef = useRef(false);
+
+  useEffect(() => {
+    const focusDone = new Audio(FOCUS_DONE_SOUND);
+    const breakOver = new Audio(BREAK_OVER_SOUND);
+    focusDone.preload = "auto";
+    breakOver.preload = "auto";
+    focusDoneAudioRef.current = focusDone;
+    breakOverAudioRef.current = breakOver;
+    return () => {
+      focusDone.pause();
+      breakOver.pause();
+      focusDoneAudioRef.current = null;
+      breakOverAudioRef.current = null;
+    };
+  }, []);
+
+  const unlockAudio = useCallback(() => {
+    if (audioUnlockedRef.current) return;
+    audioUnlockedRef.current = true;
+    [focusDoneAudioRef.current, breakOverAudioRef.current].forEach((audio) => {
+      if (!audio) return;
+      audio.muted = true;
+      audio
+        .play()
+        .then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+          audio.muted = false;
+        })
+        .catch(() => {
+          audio.muted = false;
+        });
+    });
+  }, []);
+
+  const playCue = useCallback((kind: "focusDone" | "breakOver") => {
+    const audio = kind === "focusDone" ? focusDoneAudioRef.current : breakOverAudioRef.current;
+    if (!audio) {
+      beep();
+      return;
+    }
+    try {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.muted = false;
+      audio.volume = 1;
+      const played = audio.play();
+      if (played) played.catch(() => beep());
+    } catch {
+      beep();
+    }
+  }, []);
 
   const persist = useCallback(
     (over: Partial<Snapshot> = {}) => {
@@ -197,7 +274,12 @@ export function PomodoroTimer({
     // "Auto-start breaks" toggle is on.
     const autoStart = nextPhase !== "focus" && settings.autoStartBreaks;
 
-    playSound(finishedPhase === "focus" ? FOCUS_DONE_SOUND : BREAK_OVER_SOUND);
+    playCue(finishedPhase === "focus" ? "focusDone" : "breakOver");
+    toast(
+      finishedPhase === "focus"
+        ? `⏰ Time's up — time for a ${nextPhase === "longBreak" ? "long" : "short"} break`
+        : "☕ Break's over — back to focus",
+    );
     notify(
       finishedPhase === "focus" ? "Focus block done" : "Break's over",
       finishedPhase === "focus"
@@ -235,7 +317,7 @@ export function PomodoroTimer({
         focusStartedAt: null,
       });
     }
-  }, [phase, completedFocusRounds, settings, stopTicking, logSession, persist]);
+  }, [phase, completedFocusRounds, settings, stopTicking, logSession, persist, playCue]);
 
   useEffect(() => {
     onCompleteRef.current = handlePhaseComplete;
@@ -328,6 +410,7 @@ export function PomodoroTimer({
   }, [running, startTicking, stopTicking]);
 
   function handleStart() {
+    unlockAudio();
     if (typeof Notification !== "undefined" && Notification.permission === "default") {
       Notification.requestPermission().catch(() => {});
     }
@@ -419,6 +502,7 @@ export function PomodoroTimer({
   // progress is logged first if it's worth logging. Doesn't touch the
   // long-break round counter: a break you chose to take isn't a scheduled one.
   function handleDodoBreakNow() {
+    unlockAudio();
     if (phase === "focus") {
       const elapsedSeconds = Math.round((phaseDurationMs("focus", settings) - displayRemainingMs) / 1000);
       if (elapsedSeconds >= MIN_LOGGABLE_SECONDS) {
